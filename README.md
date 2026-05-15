@@ -1,6 +1,6 @@
 # Painel de Engenharia Clínica
 
-Dashboard de monitoramento em tempo real para departamentos de **Engenharia Clínica e Gestão de Tecnologias medico-hospitalar** conectado com o GLPI para gestão de chamados e parque tecnológico, desenvolvido com HTML, CSS e JavaScript puro — sem frameworks, sem dependências externas além de fontes Google. 
+Dashboard de monitoramento em tempo real para departamentos de **Engenharia Clínica e Gestão de Tecnologias Medico-Hospitalares** conectado com o GLPI para gestão de chamados e parque tecnológico, desenvolvido com HTML, CSS e JavaScript puro — sem frameworks, sem dependências externas além de fontes Google. 
 
 > **Este repositório contém a versão demo** com dados fictícios gerados localmente. A versão em produção consome dados em tempo real via API REST do [GLPI](https://glpi-project.org/), sistema de gestão de ativos e chamados técnicos.
 
