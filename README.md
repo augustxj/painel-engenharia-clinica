@@ -125,6 +125,58 @@ painel-engenharia-clinica/
 
 ---
 
+## 🔭 Ideias de atualização
+
+Funcionalidades planejadas ou em avaliação para versões futuras do painel, priorizadas com base em requisitos de gestão de tecnologia médico-hospitalar e conformidade ONA.
+
+### Módulo de Manutenção Preventiva e Calibração
+
+| Ideia | Descrição |
+|---|---|
+| **Calendário de PM** | Visualização das manutenções preventivas programadas por equipamento, com status (no prazo / vencido / próximo do vencimento) |
+| **Controle de calibração** | Acompanhamento das datas de calibração e vencimento dos certificados — indicador crítico para auditorias ONA |
+| **Taxa de cumprimento do plano de MP** | KPI: manutenções preventivas realizadas ÷ programadas no período, com semáforo ONA |
+| **Alerta de vencimento** | Notificação proativa quando uma calibração ou PM estiver a ≤ 30 dias do vencimento |
+
+### Módulo de Disponibilidade de Equipamentos
+
+| Ideia | Descrição |
+|---|---|
+| **Disponibilidade por setor** | Percentual de equipamentos operacionais por setor (ex.: CTI 1 — 11/13 ventiladores disponíveis) |
+| **Uptime por equipamento** | Histórico de disponibilidade individual ao longo do tempo, identificando equipamentos com alta taxa de indisponibilidade |
+| **Mapa de criticidade** | Cruzamento entre criticidade do equipamento (classe de risco) e seu status atual — destaque para equipamentos de alto risco fora de operação |
+| **Tempo médio entre falhas (MTBF)** | Indicador de confiabilidade por equipamento ou por tipo, calculado a partir do histórico de chamados corretivos |
+
+### Módulo de Relatórios
+
+| Ideia | Descrição |
+|---|---|
+| **Relatório mensal de chamados** | Exportação automática em PDF com KPIs do mês, distribuição por setor/prioridade/tipo e análise de tendência — pronto para evidência documental ONA |
+| **Relatório de equipamentos** | Sumário do parque tecnológico por setor, com status operacional, data da última PM e calibração |
+| **Histórico por equipamento** | Linha do tempo de todas as intervenções (corretivas, preventivas, calibrações) em cada item do inventário — rastreabilidade para auditorias |
+| **Exportação de dados brutos** | Download em `.csv` ou `.xlsx` dos chamados filtrados por período, para análise externa no Looker Studio ou Excel |
+
+### Gestão de Contratos e Terceiros
+
+| Ideia | Descrição |
+|---|---|
+| **Chamados por fornecedor** | Painel de desempenho dos fornecedores externos: tempo de resposta, taxa de resolução, reincidências |
+
+### Gestão de Custos
+
+| Ideia | Descrição |
+|---|---|
+| **Custo de manutenção por equipamento** | Registro e acumulação do custo das intervenções para identificar equipamentos com custo de manutenção próximo ou superior ao de reposição |
+| **Orçamento de EC** | Acompanhamento do orçamento do departamento versus gastos realizados com peças, serviços terceirizados e insumos |
+
+### Melhorias Operacionais
+
+| Ideia | Descrição |
+|---|---|
+| **Tela de acreditação ONA** | Painel dedicado ao status dos indicadores ONA Nível 1 e 2 para Engenharia Clínica, com histórico mensal e evolução dos semáforos |
+| **Modo quiosque configurável** | Interface de configuração sem editar código — escolha de telas, intervalo de rotação e credenciais GLPI via painel visual |
+
+---
 ## 👤 Sobre
 
 Desenvolvido por **João Augusto Ferreira** — Biomédico, atuando na gestão de equipamentos médico-hospitalares com foco em qualidade, rastreabilidade e conformidade com padrões de acreditação.
