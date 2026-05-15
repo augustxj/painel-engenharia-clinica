@@ -24,7 +24,7 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Chamados críticos (Alta / Muito Alta prioridade) em destaque
 
 ### Tela 2 — Métricas do Mês
-![KPIs]([https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%202.png?raw=true])
+![KPIs](https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%202.png?raw=true)
 - KPIs: chamados abertos, resolvidos, tempo médio de resolução, pendentes > 7 dias
 - Gráfico de barras verticais: chamados por dia do mês
 - Gráfico de rosca: distribuição por status
@@ -32,7 +32,7 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Indicadores ONA com semáforo visual (verde/amarelo/vermelho)
 
 ### Tela 3 — Lista de Chamados
-![Chamados]([https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%203.png?raw=true])
+![Chamados](https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%203.png?raw=true)
 - Chamados abertos ordenados por prioridade
 - Coluna de idade com cor dinâmica (verde/amarelo/vermelho)
 - Modal de detalhes ao clicar em qualquer chamado
