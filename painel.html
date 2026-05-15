@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Engenharia Clínica — Hospital São Rafael (Demo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #060a06;
+  --surf:    #0a110a;
+  --surf2:   #0d160d;
+  --border:  #1a2e1a;
+  --accent:  #4caf50;
+  --acc2:    #2e7d32;
+  --green:   #66bb6a;
+  --muted:   #3a5a3a;
+  --text:    #e8f5e9;
+  --amber:   #ffab00;
+  --red:     #ef5350;
+  --blue:    #29b6f6;
+  --purple:  #ab47bc;
+  --orange:  #ff7043;
+  --teal:    #26c6da;
+  --header-h: 72px;
+  --bar-h:    32px;
+  --content-h: calc(100vh - var(--header-h) - var(--bar-h));
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:Inter,sans-serif;color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+
+/* ── HEADER ── */
+.header{
+  height:var(--header-h);background:var(--surf);
+  border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:auto 1fr auto auto;
+  align-items:center;padding:0 24px;gap:20px;
+  position:relative;z-index:10;
+}
+.header::after{
+  content:"";position:absolute;bottom:-2px;left:0;
+  width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--acc2),var(--accent),var(--green),transparent);
+  animation:glow 5s linear infinite;
+}
+@keyframes glow{0%,100%{opacity:.3}50%{opacity:1}}
+
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-logo{height:48px;width:auto;}
+.brand-divider{width:1px;height:36px;background:var(--border);}
+.dept-name{font-family:Rajdhani,sans-serif;font-size:17px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;line-height:1.1;}
+.dept-sub{font-size:10px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:2px;}
+
+/* KPIs header */
+.kpi-row{display:flex;gap:10px;justify-content:center;}
+.kpi{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:5px 16px;display:flex;flex-direction:column;align-items:center;min-width:115px;position:relative;overflow:hidden;}
+.kpi::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;}
+.kpi.kn::before{background:var(--amber);}
+.kpi.ko::before{background:var(--red);}
+.kpi.ks::before{background:var(--green);}
+.kpi-label{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:1px;}
+.kpi-value{font-family:Rajdhani,sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.kpi.kn .kpi-value{color:var(--amber);}
+.kpi.ko .kpi-value{color:var(--red);}
+.kpi.ks .kpi-value{color:var(--green);}
+.kpi-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.loading{animation:blink 1s ease infinite;}
+
+.clock-block{text-align:right;}
+.clock-time{font-family:"Share Tech Mono",monospace;font-size:30px;color:var(--green);line-height:1;letter-spacing:.06em;}
+.clock-date{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;}
+
+/* ── STAGE ── */
+.stage{width:100vw;height:var(--content-h);position:relative;background:var(--bg);}
+.screen{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease;overflow:hidden;}
+.screen.active{opacity:1;pointer-events:auto;}
+
+/* ── STATUS BAR ── */
+.statusbar{height:var(--bar-h);background:var(--surf);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;}
+.nav-dots{display:flex;gap:8px;align-items:center;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s,transform .3s;}
+.dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 6px var(--accent);}
+.progress-wrap{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--acc2),var(--green));width:0%;transition:width .4s linear;}
+.info-text{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+
+/* ── COMPONENTES COMUNS ── */
+.section-title{font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+
+.card{background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:16px;}
+.card-title{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+/* Status badge */
+.badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;padding:2px 8px;border-radius:20px;text-transform:uppercase;}
+.b1{background:#3d2e00;color:var(--amber);}
+.b2{background:#0d2a38;color:var(--blue);}
+.b3{background:#2a1530;color:var(--purple);}
+.b4{background:#3d1a0d;color:var(--orange);}
+.b5{background:#0d2a0d;color:var(--green);}
+.b6{background:#1a1a1a;color:#888;}
+
+/* Barra horizontal */
+.hbar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.hbar-label{font-size:11px;color:var(--text);min-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hbar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.hbar-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+.hbar-val{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--muted);min-width:28px;text-align:right;}
+
+/* ═══════════════════════════════════════
+   TELA 1 — CENTRAL
+═══════════════════════════════════════ */
+#tela-central{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;padding:14px;}
+/* Card de status grande */
+.status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.status-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;}
+.status-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;}
+.sc-val{font-family:Rajdhani,sans-serif;font-size:32px;font-weight:700;line-height:1;}
+.sc-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+/* Gráfico de rosca simples (SVG) */
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:16px;flex:1;}
+.donut-legend{display:flex;flex-direction:column;gap:6px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ═══════════════════════════════════════
+   TELA 2 — ASSISTÊNCIA (MÉTRICAS DO MÊS)
+═══════════════════════════════════════ */
+#tela-assistencia{
+  display:grid;
+  grid-template-columns:1fr 1.6fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:12px;padding:14px;
+}
+
+.metric-big{background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.metric-val{font-family:Rajdhani,sans-serif;font-size:48px;font-weight:700;line-height:1;}
+.metric-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:4px;text-align:center;}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+
+.ona-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.ona-val{font-family:Rajdhani,sans-serif;font-size:24px;font-weight:700;line-height:1;}
+.ona-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+/* Semáforo ONA */
+.semaforo{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.sem-dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.sem-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green);}
+.sem-dot.warn{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.sem-dot.crit{background:var(--red);box-shadow:0 0 6px var(--red);}
+.sem-label{font-size:10px;}
+
+/* Gráfico rosca */
+.donut-container{display:flex;align-items:center;justify-content:center;gap:20px;flex:1;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.legend-pct{font-family:"Share Tech Mono",monospace;color:var(--muted);font-size:11px;margin-left:auto;padding-left:8px;}
+
+/* Gráfico barras verticais */
+.vchart{display:flex;align-items:flex-end;gap:3px;flex:1;padding:8px 4px 0;}
+.vbar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;}
+.vbar-fill{width:100%;border-radius:3px 3px 0 0;min-height:2px;transition:height .8s ease;}
+.vbar-lbl{font-size:9px;color:var(--muted);font-family:"Share Tech Mono",monospace;transform:rotate(-45deg);transform-origin:top right;white-space:nowrap;}
+.vbar-val{font-size:10px;font-family:"Share Tech Mono",monospace;color:var(--text);}
+.vchart-wrap{display:flex;flex-direction:column;height:100%;}
+
+/* ═══════════════════════════════════════
+   TELA 3 — CHAMADOS
+═══════════════════════════════════════ */
+#tela-chamados{display:flex;flex-direction:column;}
+.ticket-header-row{
+  display:grid;grid-template-columns:3.5fr 1.5fr 1.2fr 1.1fr 1.1fr;
+  padding:8px 20px;font-size:10px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--border);background:var(--surf);
+}
+.ticket-list{flex:1;overflow:hidden;padding:8px 12px;display:flex;flex-direction:column;gap:5px;}
+.ticket-card{
+  background:var(--surf2);border:1px solid var(--border);border-left:3px solid var(--border);
+  border-radius:5px;padding:9px 14px;
+  display:grid;grid-template-columns:3.5fr 1.5fr 1.2fr 1.1fr 1.1fr;
+  align-items:center;gap:8px;
+}
+.ticket-card.s1{border-left-color:var(--amber);}
+.ticket-card.s2{border-left-color:var(--blue);}
+.ticket-card.s3{border-left-color:var(--purple);}
+.ticket-card.s4{border-left-color:var(--orange);}
+.t-title{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-id{font-size:10px;color:var(--muted);margin-top:2px;}
+.t-loc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-date{font-size:11px;color:var(--muted);font-family:"Share Tech Mono",monospace;}
+.t-age{font-size:11px;font-family:"Share Tech Mono",monospace;}
+.ticket-footer{
+  padding:5px 20px;font-size:10px;color:var(--muted);
+  border-top:1px solid var(--border);background:var(--surf);
+  display:flex;justify-content:space-between;
+}
+.empty-state{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
+
+/* ── KPI CRÍTICOS ── */
+#kpi-crit-card{ border-top: 2px solid var(--red) !important; }
+#kpi-crit-card::before{ background: var(--red); }
+
+/* ── DOTS CLICÁVEIS ── */
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s,transform .3s;cursor:pointer;}
+.dot:hover{background:var(--muted);transform:scale(1.2);}
+.dot.active{background:var(--accent);transform:scale(1.4);box-shadow:0 0 6px var(--accent);}
+
+/* ── KPIs CLICÁVEIS ── */
+.kpi{cursor:pointer;transition:border-color .2s,box-shadow .2s;}
+.kpi:hover{border-color:var(--accent);box-shadow:0 0 10px rgba(76,175,80,.2);}
+
+/* ── SELETOR DE INTERVALO ── */
+.interval-sel{
+  display:flex;gap:4px;align-items:center;
+}
+.int-btn{
+  background:none;border:1px solid var(--border);border-radius:3px;
+  color:var(--muted);font-family:"Share Tech Mono",monospace;font-size:10px;
+  padding:2px 7px;cursor:pointer;transition:all .2s;
+}
+.int-btn:hover{border-color:var(--accent);color:var(--accent);}
+.int-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(76,175,80,.1);}
+.int-label{font-size:10px;color:var(--muted);font-family:"Share Tech Mono",monospace;}
+
+/* ── MODAL DE DETALHES ── */
+#modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:2000;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+#modal-overlay.open{display:flex;}
+#modal-box{
+  background:var(--surf);border:1px solid var(--border);border-radius:12px;
+  padding:24px;max-width:520px;width:90%;position:relative;
+  animation:modalIn .3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-close{
+  position:absolute;top:12px;right:14px;
+  background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;
+}
+.modal-close:hover{color:var(--text);}
+.modal-title{font-family:Rajdhani,sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;padding-right:24px;}
+.modal-id{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--muted);margin-bottom:16px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.modal-field{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;}
+.modal-field-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.modal-field-value{font-size:13px;color:var(--text);}
+.modal-desc{background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.modal-desc-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.modal-desc-text{font-size:12px;color:var(--text);line-height:1.6;max-height:100px;overflow-y:auto;}
+
+/* ── TOOLTIP ── */
+.tooltip-wrap{position:relative;}
+.tooltip-wrap:hover .tooltip-box{display:block;}
+.tooltip-box{
+  display:none;position:absolute;right:0;bottom:calc(100% + 6px);
+  background:var(--surf);border:1px solid var(--border);border-radius:6px;
+  padding:8px 12px;min-width:180px;z-index:100;
+  font-size:11px;color:var(--text);white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+}
+.tooltip-box::after{
+  content:"";position:absolute;bottom:-5px;right:12px;
+  width:8px;height:8px;background:var(--surf);border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  transform:rotate(45deg);
+}
+
+/* ── FILTRO DE SETOR ── */
+.setor-filter-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(76,175,80,.15);border:1px solid var(--accent);
+  border-radius:4px;padding:2px 8px;font-size:10px;color:var(--accent);
+  margin-bottom:8px;cursor:pointer;
+}
+.setor-filter-badge:hover{background:rgba(76,175,80,.25);}
+
+/* ── ANIMAÇÃO CONTADOR ── */
+@keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.count-anim{animation:countUp .5s ease;}
+
+.btn-pause{
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .06em;
+  flex-shrink: 0;
+}
+.btn-pause:hover{ border-color: var(--accent); color: var(--accent); }
+.btn-pause.paused{ border-color: var(--amber); color: var(--amber); }
+.kpi.kd::before{ background: var(--blue); }
+.kpi.kd .kpi-value{ color: var(--blue); }
+.kpi.kd.warn .kpi-value{ color: var(--amber); }
+.kpi.kd.crit .kpi-value{ color: var(--red); }
+.kpi.kd.warn::before{ background: var(--amber); }
+.kpi.kd.crit::before{ background: var(--red); }
+
+/* ── CARD FLUTUANTE DE ALERTA ── */
+#alert-stack{
+  position:fixed;
+  bottom:calc(var(--bar-h) + 12px);
+  right:16px;
+  z-index:999;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-width:320px;
+}
+.alert-card{
+  background:#1a0505;
+  border:1px solid var(--red);
+  border-left:4px solid var(--red);
+  border-radius:8px;
+  padding:12px 14px;
+  box-shadow:0 0 20px rgba(239,83,80,.3);
+  animation:alertIn .4s ease, alertPulse 2s ease 0.4s infinite;
+  position:relative;
+}
+@keyframes alertIn{
+  from{opacity:0;transform:translateX(40px);}
+  to{opacity:1;transform:translateX(0);}
+}
+@keyframes alertPulse{
+  0%,100%{box-shadow:0 0 16px rgba(239,83,80,.25);}
+  50%{box-shadow:0 0 28px rgba(239,83,80,.55);}
+}
+.alert-badge{
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--red);margin-bottom:4px;display:flex;align-items:center;gap:6px;
+}
+.alert-badge::before{
+  content:"";width:7px;height:7px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 6px var(--red);
+  animation:blink 1s ease infinite;
+}
+.alert-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px;}
+.alert-meta{font-size:11px;color:#888;font-family:"Share Tech Mono",monospace;}
+.alert-close{
+  position:absolute;top:8px;right:10px;
+  font-size:14px;color:#666;cursor:pointer;
+  background:none;border:none;line-height:1;
+}
+.alert-close:hover{color:var(--text);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">
+    <img class="brand-logo" style="font-family:Rajdhani,sans-serif;font-size:22px;font-weight:700;color:#4caf50;letter-spacing:.1em;" class="brand-logo-text" >Hospital João Augusto</span>
+    <div class="brand-divider"></div>
+    <div class="brand-dept">
+      <div class="dept-name">Engenharia Clínica</div>
+      <div class="dept-sub">Central de Monitoramento</div>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi kn"><div class="kpi-label">Novos</div><div class="kpi-value loading" id="kpi-new">—</div><div class="kpi-sub">em aberto</div></div>
+    <div class="kpi ko"><div class="kpi-label">Não Solucionados</div><div class="kpi-value loading" id="kpi-open">—</div><div class="kpi-sub">em aberto</div></div>
+    <div class="kpi ks"><div class="kpi-label">Solucionados</div><div class="kpi-value loading" id="kpi-solved">—</div><div class="kpi-sub" id="kpi-solved-sub">no mês</div></div>
+    <div class="kpi" style="--top:var(--red)" id="kpi-crit-card"><div class="kpi-label">Críticos</div><div class="kpi-value loading" id="kpi-crit" style="color:var(--red)">—</div><div class="kpi-sub">alta/mt.alta abertos</div></div>
+    <div class="kpi kd" id="kpi-disp-card"><div class="kpi-label">Disponibilidade</div><div class="kpi-value loading" id="kpi-disp">—</div><div class="kpi-sub">parque ativo</div></div>
+  </div>
+  <div class="clock-block">
+    <div class="clock-time" id="clock-time">00:00:00</div>
+    <div class="clock-date" id="clock-date">—</div>
+  </div>
+</header>
+
+<!-- ALERTAS FLUTUANTES -->
+<div id="alert-stack"></div>
+
+<!-- STAGE -->
+<div class="stage">
+
+  <!-- ═══ TELA 1: CENTRAL ═══ -->
+  <div class="screen active" id="tela-central">
+
+    <!-- Col 1: Status dos chamados -->
+    <div class="card" style="grid-column:1;grid-row:1/3;display:flex;flex-direction:column;">
+      <div class="card-title">Chamados por Status</div>
+      <div class="status-grid" id="status-grid">
+        <div class="status-card" style="--c:var(--amber)"><div class="sc-val loading" id="sc-novo" style="color:var(--amber)">—</div><div class="sc-lbl">Novo</div></div>
+        <div class="status-card"><div class="sc-val loading" id="sc-atend" style="color:var(--blue)">—</div><div class="sc-lbl">Em Atend.</div></div>
+        <div class="status-card"><div class="sc-val loading" id="sc-plan" style="color:var(--purple)">—</div><div class="sc-lbl">Planejado</div></div>
+        <div class="status-card"><div class="sc-val loading" id="sc-esp" style="color:var(--orange)">—</div><div class="sc-lbl">Em Espera</div></div>
+        <div class="status-card"><div class="sc-val loading" id="sc-sol" style="color:var(--green)">—</div><div class="sc-lbl">Solucionado</div></div>
+        <div class="status-card"><div class="sc-val loading" id="sc-fec" style="color:#888">—</div><div class="sc-lbl">Fechado</div></div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="card-title">Por Prioridade</div>
+        <div id="prior-bars"></div>
+      </div>
+    </div>
+
+    <!-- Col 2 linha 1: Chamados por setor -->
+    <div class="card" style="grid-column:2;grid-row:1;display:flex;flex-direction:column;">
+      <div class="card-title">Chamados Abertos por Setor</div>
+      <div id="setor-bars" style="flex:1;overflow:hidden;"></div>
+    </div>
+
+    <!-- Col 2 linha 2: Chamados críticos abertos -->
+    <div class="card" style="grid-column:2;grid-row:2;display:flex;flex-direction:column;border-top:2px solid var(--red);">
+      <div class="card-title" style="color:var(--red);letter-spacing:.16em;">⚠ Chamados Críticos Abertos</div>
+      <div id="criticos-list" style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+
+    <!-- Col 3 linha 1: Equipamentos por status -->
+    <div class="card" style="grid-column:3;grid-row:1;display:flex;flex-direction:column;">
+      <div class="card-title">Equipamentos por Status</div>
+      <div id="equip-bars"></div>
+    </div>
+
+    <!-- Col 3 linha 2: Totais equipamentos -->
+    <div class="card" style="grid-column:3;grid-row:2;display:flex;flex-direction:column;justify-content:center;gap:8px;">
+      <div class="card-title">Resumo do Parque</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="equip-resumo">
+        <div class="ona-card"><div class="ona-val loading" id="eq-total" style="color:var(--accent)">—</div><div class="ona-lbl">Total cadastrado</div></div>
+        <div class="ona-card"><div class="ona-val loading" id="eq-ok" style="color:var(--green)">—</div><div class="ona-lbl">Em funcionamento</div></div>
+        <div class="ona-card"><div class="ona-val loading" id="eq-manut" style="color:var(--amber)">—</div><div class="ona-lbl">Em manutenção</div></div>
+        <div class="ona-card"><div class="ona-val loading" id="eq-inop" style="color:var(--red)">—</div><div class="ona-lbl">Inoperantes</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ TELA 2: ASSISTÊNCIA ═══ -->
+  <div class="screen" id="tela-assistencia">
+
+    <!-- Col 1: KPIs numéricos empilhados -->
+    <div style="grid-column:1;grid-row:1/3;display:flex;flex-direction:column;gap:10px;">
+      <div class="metric-big" style="flex:1;border-top:2px solid var(--red);">
+        <div class="metric-val loading" id="m-abertos" style="color:var(--red)">—</div>
+        <div class="metric-lbl">Abertos no Mês</div>
+        <div class="metric-sub" id="m-abertos-sub">—</div>
+      </div>
+      <div class="metric-big" style="flex:1;border-top:2px solid var(--green);">
+        <div class="metric-val loading" id="m-resolvidos" style="color:var(--green)">—</div>
+        <div class="metric-lbl">Resolvidos no Mês</div>
+        <div class="metric-sub" id="m-taxa">taxa —%</div>
+      </div>
+      <div class="metric-big" style="flex:1;border-top:2px solid var(--blue);">
+        <div class="metric-val loading" id="m-tmed" style="color:var(--blue)">—</div>
+        <div class="metric-lbl">Tempo Médio (dias)</div>
+        <div class="metric-sub">resolução mês atual</div>
+      </div>
+      <div class="metric-big" style="flex:1;border-top:2px solid var(--amber);">
+        <div class="metric-val loading" id="m-pendentes" style="color:var(--amber)">—</div>
+        <div class="metric-lbl">Abertos &gt; 7 dias</div>
+        <div class="semaforo" id="sem-pendentes" style="justify-content:center;"></div>
+      </div>
+    </div>
+
+    <!-- Col 2 linha 1: Gráfico de barras por dia do mês -->
+    <div class="card" style="grid-column:2;grid-row:1;display:flex;flex-direction:column;">
+      <div class="card-title">Chamados por Dia — <span id="chart-mes-label">mês atual</span></div>
+      <div class="vchart-wrap">
+        <div class="vchart" id="vchart-dias"></div>
+      </div>
+    </div>
+
+    <!-- Col 2 linha 2: Rosca de taxa de resolução -->
+    <div class="card" style="grid-column:2;grid-row:2;display:flex;flex-direction:column;">
+      <div class="card-title">Distribuição de Status — Mês</div>
+      <div class="donut-container" id="donut-status-wrap"></div>
+    </div>
+
+    <!-- Col 3: Rosca prioridade + ONA -->
+    <div style="grid-column:3;grid-row:1/3;display:flex;flex-direction:column;gap:10px;">
+      <div class="card" style="flex:1.2;display:flex;flex-direction:column;">
+        <div class="card-title">Prioridade — Abertos</div>
+        <div class="donut-container" id="donut-prior-wrap"></div>
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div class="card-title">Indicadores ONA / Gestão</div>
+        <div class="ona-card">
+          <div class="ona-val" id="ona-criticos" style="color:var(--red)">—</div>
+          <div class="ona-lbl">Alta / Muito Alta prioridade abertos</div>
+          <div class="semaforo" id="sem-criticos"></div>
+        </div>
+        <div class="ona-card">
+          <div class="ona-val" id="ona-taxa" style="color:var(--green)">—%</div>
+          <div class="ona-lbl">Taxa de resolução no mês</div>
+          <div class="semaforo" id="sem-taxa"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ TELA 3: CHAMADOS ═══ -->
+  <div class="screen" id="tela-chamados">
+    <div class="ticket-header-row">
+      <div>Chamado</div><div>Localização</div><div>Status</div><div>Abertura</div><div>Idade</div>
+    </div>
+    <div class="ticket-list" id="ticket-list">
+      <div class="empty-state">Carregando chamados...</div>
+    </div>
+    <div class="ticket-footer">
+      <span id="ticket-count">—</span>
+      <span id="ticket-updated">—</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DETALHES -->
+<div id="modal-overlay" onclick="if(event.target===this)fecharModal()">
+  <div id="modal-box">
+    <button class="modal-close" onclick="fecharModal()">✕</button>
+    <div class="modal-title" id="modal-title">—</div>
+    <div class="modal-id" id="modal-id">—</div>
+    <div class="modal-grid" id="modal-grid"></div>
+    <div class="modal-desc">
+      <div class="modal-desc-label">Descrição</div>
+      <div class="modal-desc-text" id="modal-desc">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="nav-dots">
+    <div class="dot active" id="dot0" onclick="goTo(0);if(paused){}else{togglePause();togglePause();}"></div>
+    <div class="dot"        id="dot1" onclick="goTo(1);if(paused){}else{togglePause();togglePause();}"></div>
+    <div class="dot"        id="dot2" onclick="goTo(2);if(paused){}else{togglePause();togglePause();}"></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+  <div class="info-text" id="next-label">próx. em 30s</div>
+  <div style="flex:1"></div>
+  <div class="interval-sel">
+    <span class="int-label">intervalo:</span>
+    <button class="int-btn" onclick="setInterval_(15)">15s</button>
+    <button class="int-btn active" id="int-30" onclick="setInterval_(30)">30s</button>
+    <button class="int-btn" onclick="setInterval_(60)">60s</button>
+  </div>
+  <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸ pausar</button>
+  <div class="info-text" id="refresh-label">atualiz. em 1:00</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   PAINEL DE ENGENHARIA CLÍNICA — VERSÃO DEMO
+   Dados fictícios para fins de portfólio.
+   Em produção, os dados são consumidos via API REST
+   do GLPI (sistema de gestão de ativos e chamados).
+═══════════════════════════════════════════════════ */
+
+const SCREENS   = ["tela-central","tela-assistencia","tela-chamados"];
+const ROTATE_MS = 30000;
+const KPI_MS    = 60000;
+const TICK_MS   = 500;
+
+/* ═══ DICIONÁRIOS GLOBAIS ═══ */
+const STATUS_LABEL = {1:"Novo",2:"Em Atend.",3:"Planejado",4:"Em Espera",5:"Solucionado",6:"Fechado"};
+const PRIOR_LABEL  = {1:"Muito Baixa",2:"Baixa",3:"Média",4:"Alta",5:"Muito Alta",6:"Maior"};
+const PRIOR_COLOR  = {1:"#888",2:"#29b6f6",3:"#4caf50",4:"#ffab00",5:"#ef5350",6:"#ff1744"};
+const DIAS   = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const MESES  = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+/* ═══ DADOS MOCKADOS ═══ */
+function gerarMock(){
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+
+  const setores = ["UTI Neonatal","CTI Adulto","Centro Cirúrgico","Centro Obstétrico",
+                   "UNACON Oncologia","Hemodiálise","Maternidade","Pronto Socorro","Endoscopia","Radiologia"];
+  const tipos   = ["Monitor Multiparâmetros","Ventilador Mecânico","Bomba de Infusão",
+                   "Desfibrilador","Berço Aquecido","Oxímetro","ECG","Bisturi Elétrico","Autoclave","Incubadora"];
+  const titulos = [
+    "Alarme sonoro com defeito","Tela apresentando falha","Equipamento não liga",
+    "Calibração periódica","Manutenção preventiva","Troca de bateria",
+    "Sensor com leitura incorreta","Vazamento identificado","Atualização de firmware",
+    "Verificação pós-manutenção","Cabo danificado","Interface travando"
+  ];
+
+  // Gera tickets simulados
+  const tickets = [];
+  for(let i=1; i<=42; i++){
+    const daysAgo = Math.floor(Math.random()*60);
+    const date = new Date(y,m,d-daysAgo, 8+Math.floor(Math.random()*9), Math.floor(Math.random()*60));
+    const status = daysAgo>30 ? 6 : daysAgo>14 ? 5 : [1,2,2,3,4][Math.floor(Math.random()*5)];
+    const solved = (status===5||status===6) ? new Date(date.getTime()+(1+Math.floor(Math.random()*10))*86400000) : null;
+    const solvedToday = solved && solved.toDateString()===now.toDateString();
+    tickets.push({
+      id: 2024000+i,
+      name: titulos[Math.floor(Math.random()*titulos.length)],
+      status,
+      priority: [2,3,3,4,5][Math.floor(Math.random()*5)],
+      locations_id: setores[Math.floor(Math.random()*setores.length)],
+      date: date.toISOString().replace("T"," ").slice(0,19),
+      solvedate: solved ? solved.toISOString().replace("T"," ").slice(0,19) : null,
+      itilcategories_id: ["Corretiva","Preventiva","Preditiva"][Math.floor(Math.random()*3)],
+      content: "Solicitação registrada pelo setor. Aguardando atendimento da equipe de engenharia clínica.",
+    });
+  }
+  // Garante alguns abertos hoje e resolvidos hoje
+  for(let i=0;i<4;i++) tickets[i].status=1, tickets[i].date=now.toISOString().replace("T"," ").slice(0,19);
+  for(let i=4;i<9;i++){tickets[i].status=5;const s=new Date(now.getTime()-3600000*i);tickets[i].solvedate=s.toISOString().replace("T"," ").slice(0,19);}
+
+  // Gera equipamentos simulados
+  const estados = ["Em funcionamento","Em funcionamento","Em funcionamento","Em funcionamento",
+                   "Em análise","Em manutenção","Com defeito","Em manutenção externa","Obsoleto"];
+  const equip = [];
+  for(let i=1;i<=54;i++){
+    equip.push({
+      id: 1000+i,
+      name: `[${tipos[Math.floor(Math.random()*tipos.length)].split(" ")[0].toUpperCase()}] ${tipos[Math.floor(Math.random()*tipos.length)]} ${1000+Math.floor(Math.random()*9000)}`,
+      locations_id: setores[Math.floor(Math.random()*setores.length)],
+      states_id: estados[Math.floor(Math.random()*estados.length)],
+      serial: "SN"+Math.floor(Math.random()*999999),
+      otherserial: String(100+i),
+    });
+  }
+  return {tickets, equip};
+}
+
+const MOCK = gerarMock();
+function getMockTickets(){ return Promise.resolve(MOCK.tickets); }
+function getMockEquip()  { return Promise.resolve(MOCK.equip);   }
+
+/* ═══ ESTADO ═══ */
+let current=0, elapsed=0, kpiR=KPI_MS/1000;
+let paused=false, rotateMs=ROTATE_MS, _rotTimer=0;
+let _allTickets=[], filtroSetor=null;
+window.__ticketMap={};
+
+const allS = SCREENS.map(id=>document.getElementById(id));
+const dots  = document.querySelectorAll(".dot");
+const bar   = document.getElementById("progress-bar");
+
+function sv(id,val){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const num=parseInt(val);
+  if(!isNaN(num)&&el.classList.contains("kpi-value")){ animCount(el,num); }
+  else { el.textContent=val; }
+  el.classList.remove("loading");
+}
+
+/* ═══ NAVEGAÇÃO ═══ */
+function goTo(idx){
+  allS[current].classList.remove("active"); dots[current].classList.remove("active");
+  current=idx;
+  allS[current].classList.add("active"); dots[current].classList.add("active");
+  elapsed=0; _rotTimer=0; bar.style.width="0%";
+}
+function togglePause(){
+  paused=!paused;
+  const btn=document.getElementById("btn-pause");
+  btn.textContent=paused?"▶ retomar":"⏸ pausar";
+  btn.classList.toggle("paused",paused);
+  if(paused) document.getElementById("next-label").textContent="pausado";
+}
+function setInterval_(s){
+  rotateMs=s*1000; elapsed=0;
+  document.querySelectorAll(".int-btn").forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+}
+// Controle de rotação por elapsed
+setInterval(()=>{
+  if(!paused){ elapsed+=TICK_MS; _rotTimer+=TICK_MS; if(_rotTimer>=rotateMs){ goTo((current+1)%allS.length); } }
+  kpiR-=TICK_MS/1000;
+  bar.style.width=paused?bar.style.width:Math.min((elapsed/rotateMs)*100,100)+"%";
+  if(!paused) document.getElementById("next-label").textContent="próx. em "+Math.max(0,Math.ceil((rotateMs-elapsed)/1000))+"s";
+  const m=Math.floor(Math.max(0,kpiR)/60),s=Math.floor(Math.max(0,kpiR)%60);
+  document.getElementById("refresh-label").textContent="atualiz. em "+m+":"+String(s).padStart(2,"0");
+},TICK_MS);
+
+/* ═══ TECLADO ═══ */
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight"||e.key==="ArrowDown") goTo((current+1)%allS.length);
+  else if(e.key==="ArrowLeft"||e.key==="ArrowUp") goTo((current+2)%allS.length);
+  else if(e.key==="r"||e.key==="R"){ fetchAll(); showToast("↻ Atualizando dados..."); }
+  else if(e.key===" "){ e.preventDefault(); togglePause(); }
+  else if(e.key==="1") goTo(0);
+  else if(e.key==="2") goTo(1);
+  else if(e.key==="3") goTo(2);
+  else if(e.key==="Escape"){ fecharModal(); limparFiltroSetor(); }
+});
+
+/* ═══ RELÓGIO ═══ */
+function updateClock(){
+  const n=new Date();
+  document.getElementById("clock-time").textContent=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0")+":"+String(n.getSeconds()).padStart(2,"0");
+  document.getElementById("clock-date").textContent=DIAS[n.getDay()]+", "+n.getDate()+" de "+MESES[n.getMonth()]+" de "+n.getFullYear();
+}
+setInterval(updateClock,1000); updateClock();
+
+/* ═══ TOAST ═══ */
+function showToast(msg){
+  const t=document.createElement("div");
+  t.style.cssText="position:fixed;top:80px;right:16px;z-index:3000;background:#0a110a;border:1px solid #1a2e1a;border-radius:6px;padding:8px 16px;font-size:12px;color:#4caf50;font-family:'Share Tech Mono',monospace;transition:opacity .3s;";
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},1800);
+}
+
+/* ═══ ANIMAÇÃO CONTADOR ═══ */
+function animCount(el,target){
+  const start=parseInt(el.textContent)||0;
+  if(start===target){el.textContent=target;return;}
+  const steps=20,dur=600; let i=0;
+  const iv=setInterval(()=>{ i++; el.textContent=Math.round(start+(target-start)*(i/steps)); if(i>=steps){el.textContent=target;clearInterval(iv);}},dur/steps);
+}
+
+/* ═══ MODAL ═══ */
+function abrirModal(ticket){
+  if(!ticket) return;
+  document.getElementById("modal-title").textContent=ticket.name||"Sem título";
+  document.getElementById("modal-id").textContent="#"+ticket.id+" · aberto em "+fmtDate(ticket.date);
+  document.getElementById("modal-grid").innerHTML=`
+    <div class="modal-field"><div class="modal-field-label">Status</div><div class="modal-field-value">${STATUS_LABEL[ticket.status]||ticket.status}</div></div>
+    <div class="modal-field"><div class="modal-field-label">Prioridade</div><div class="modal-field-value">${PRIOR_LABEL[ticket.priority]||ticket.priority}</div></div>
+    <div class="modal-field"><div class="modal-field-label">Localização</div><div class="modal-field-value">${ticket.locations_id||"—"}</div></div>
+    <div class="modal-field"><div class="modal-field-label">Idade</div><div class="modal-field-value" style="color:${ageColor(ticket.date)}">${ageStr(ticket.date)}</div></div>
+    <div class="modal-field"><div class="modal-field-label">Categoria</div><div class="modal-field-value">${ticket.itilcategories_id||"—"}</div></div>
+    <div class="modal-field"><div class="modal-field-label">Solução em</div><div class="modal-field-value">${ticket.solvedate?fmtDate(ticket.solvedate):"Pendente"}</div></div>`;
+  const raw=ticket.content||"Sem descrição";
+  document.getElementById("modal-desc").textContent=raw.replace(/<[^>]+>/g,"").trim()||"—";
+  document.getElementById("modal-overlay").classList.add("open");
+}
+function fecharModal(){ document.getElementById("modal-overlay").classList.remove("open"); }
+
+/* ═══ FILTRO SETOR ═══ */
+function filtrarPorSetor(setor){ filtroSetor=setor; goTo(2); renderChamadosFiltrado(); showToast("Setor: "+setor); }
+function limparFiltroSetor(){ filtroSetor=null; if(_allTickets.length) renderChamados(_allTickets); }
+function renderChamadosFiltrado(){
+  if(!_allTickets.length) return;
+  const base=filtroSetor?_allTickets.filter(t=>t.locations_id===filtroSetor&&t.status!==5&&t.status!==6):_allTickets.filter(t=>t.status!==5&&t.status!==6);
+  renderChamados(_allTickets,base);
+}
+
+/* ═══ KPIs CLICÁVEIS ═══ */
+function setupKpiNav(){
+  const kn=document.querySelector(".kpi.kn"), ko=document.querySelector(".kpi.ko");
+  const ks=document.querySelector(".kpi.ks"), kc=document.getElementById("kpi-crit-card");
+  const kd=document.getElementById("kpi-disp-card");
+  if(kn) kn.addEventListener("click",()=>{goTo(2);showToast("Chamados Novos");});
+  if(ko) ko.addEventListener("click",()=>{goTo(2);showToast("Chamados em aberto");});
+  if(ks) ks.addEventListener("click",()=>{goTo(1);showToast("Métricas do mês");});
+  if(kc) kc.addEventListener("click",()=>{goTo(2);showToast("Chamados Críticos");});
+  if(kd) kd.addEventListener("click",()=>{goTo(0);showToast("Parque de Equipamentos");});
+}
+
+/* ═══ HELPERS DATA ═══ */
+function todayBounds(){
+  const n=new Date();
+  return{s:new Date(n.getFullYear(),n.getMonth(),n.getDate(),0,0,0),e:new Date(n.getFullYear(),n.getMonth(),n.getDate(),23,59,59)};
+}
+function monthBounds(){
+  const n=new Date();
+  return{s:new Date(n.getFullYear(),n.getMonth(),1,0,0,0),e:new Date(n.getFullYear(),n.getMonth()+1,0,23,59,59)};
+}
+function fmtDate(str){
+  if(!str) return "—";
+  const d=new Date(str);
+  return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+function ageStr(str){
+  if(!str) return "—";
+  const h=Math.floor((Date.now()-new Date(str).getTime())/3600000);
+  return h<24?h+"h":Math.floor(h/24)+"d";
+}
+function ageColor(str){
+  if(!str) return "#3a5a3a";
+  const d=(Date.now()-new Date(str).getTime())/86400000;
+  return d>7?"#ef5350":d>3?"#ffab00":"#66bb6a";
+}
+function semaforo(cont,nivel){
+  if(!cont) return;
+  const labels={ok:"Adequado",warn:"Atenção",crit:"Crítico"};
+  const color=nivel==="ok"?"#66bb6a":nivel==="warn"?"#ffab00":"#ef5350";
+  cont.innerHTML=`<div class="sem-dot ${nivel}"></div><span class="sem-label" style="color:${color}">${labels[nivel]}</span>`;
+}
+function hbar(label,val,max,color,onclick){
+  const pct=max>0?Math.round((val/max)*100):0;
+  return `<div class="hbar-wrap"${onclick?` style="cursor:pointer;" onclick="${onclick}"`:""}><div class="hbar-label">${label}</div><div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color};"></div></div><div class="hbar-val">${val}</div></div>`;
+}
+
+/* ═══ GRÁFICOS ═══ */
+function donutSVG(slices,cx,cy,r,stroke){
+  const total=slices.reduce((a,s)=>a+s.val,0);
+  if(total===0) return `<svg width="${cx*2}" height="${cy*2}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1a2e1a" stroke-width="${stroke}"/></svg>`;
+  const circ=2*Math.PI*r; let offset=0;
+  const paths=slices.map(s=>{
+    const pct=s.val/total,dash=pct*circ,gap=circ-dash;
+    const svg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}" stroke-width="${stroke}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset*circ).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset+=pct; return svg;
+  });
+  return `<svg viewBox="0 0 ${cx*2} ${cy*2}" width="${cx*2}" height="${cy*2}">${paths.join("")}</svg>`;
+}
+function renderDonut(containerId,slices,centerLabel,centerSub){
+  const el=document.getElementById(containerId); if(!el) return;
+  const total=slices.reduce((a,s)=>a+s.val,0);
+  const svg=donutSVG(slices,70,70,52,18);
+  const legend=slices.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div><span>${s.label}</span><span class="legend-pct">${total>0?Math.round((s.val/total)*100):0}% (${s.val})</span></div>`).join("");
+  el.innerHTML=`<div style="position:relative;flex-shrink:0;">${svg}<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-family:Rajdhani,sans-serif;font-size:22px;font-weight:700;color:#e8f5e9;line-height:1;">${centerLabel}</div><div style="font-size:9px;color:#3a5a3a;letter-spacing:.1em;text-transform:uppercase;">${centerSub}</div></div></div><div class="donut-legend">${legend}</div>`;
+}
+function renderVchart(tickets,mes,ano){
+  const diasNoMes=new Date(ano,mes+1,0).getDate();
+  const counts=Array(diasNoMes).fill(0);
+  tickets.forEach(t=>{const d=new Date(t.date);if(d.getMonth()===mes&&d.getFullYear()===ano) counts[d.getDate()-1]++;});
+  const maxV=Math.max(...counts,1),hoje=new Date().getDate();
+  const bars=counts.map((v,i)=>{
+    const dia=i+1,isFuture=dia>hoje&&mes===new Date().getMonth()&&ano===new Date().getFullYear(),isHoje=dia===hoje&&mes===new Date().getMonth();
+    const color=isFuture?"#1a2e1a":isHoje?"#4caf50":v===0?"#0d160d":"#2e7d32";
+    const hp=isFuture?0:Math.max((v/maxV)*100,v>0?4:0);
+    return `<div class="vbar-col" title="Dia ${dia}: ${v} chamado(s)"><div class="vbar-val" style="color:${isHoje?"#4caf50":"#3a5a3a"};font-size:9px;">${v>0&&!isFuture?v:""}</div><div class="vbar-fill" style="height:${hp}%;background:${color};"></div><div class="vbar-lbl">${dia}</div></div>`;
+  }).join("");
+  document.getElementById("vchart-dias").innerHTML=bars;
+  document.getElementById("chart-mes-label").textContent=MESES[mes]+" "+ano;
+}
+
+/* ═══ RENDERS ═══ */
+function renderCentral(tickets,equipamentos){
+  const abertos=tickets.filter(t=>t.status!==5&&t.status!==6);
+  const sc={1:0,2:0,3:0,4:0,5:0,6:0};
+  tickets.forEach(t=>sc[t.status]=(sc[t.status]||0)+1);
+  sv("sc-novo",sc[1]||0);sv("sc-atend",sc[2]||0);sv("sc-plan",sc[3]||0);
+  sv("sc-esp",sc[4]||0);sv("sc-sol",sc[5]||0);sv("sc-fec",sc[6]||0);
+  const pc={};
+  abertos.forEach(t=>{const p=t.priority||3;pc[p]=(pc[p]||0)+1;});
+  const maxP=Math.max(...Object.values(pc),1);
+  document.getElementById("prior-bars").innerHTML=[5,4,3,2,1].filter(p=>pc[p]).map(p=>hbar(PRIOR_LABEL[p]||p,pc[p],maxP,PRIOR_COLOR[p]||"#4caf50")).join("");
+  const setores={};
+  abertos.forEach(t=>{const l=t.locations_id||"Não informado";setores[l]=(setores[l]||0)+1;});
+  const setorArr=Object.entries(setores).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxS=setorArr[0]?setorArr[0][1]:1;
+  const COLORS=["#4caf50","#29b6f6","#ffab00","#ab47bc","#26c6da","#ff7043"];
+  document.getElementById("setor-bars").innerHTML=setorArr.map(([l,v],i)=>`<div class="hbar-wrap" style="cursor:pointer;" onclick="filtrarPorSetor('${l.replace(/'/g,"\'")}')"><div class="hbar-label" title="${l}">${l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${maxS>0?Math.round((v/maxS)*100):0}%;background:${COLORS[i%COLORS.length]};"></div></div><div class="hbar-val">${v}</div></div>`).join("");
+  const criticos=abertos.filter(t=>t.priority>=4).sort((a,b)=>b.priority-a.priority||(new Date(a.date)-new Date(b.date)));
+  const critEl=document.getElementById("criticos-list");
+  if(!criticos.length){critEl.innerHTML="<div style='color:#66bb6a;font-size:12px;padding:8px 0;'>✓ Nenhum chamado crítico aberto</div>";}
+  else{critEl.innerHTML=criticos.slice(0,6).map(t=>`<div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;background:#060a06;border:1px solid #1a2e1a;border-left:3px solid ${t.priority===5?"#ef5350":"#ff7043"};border-radius:5px;padding:7px 10px;cursor:pointer;" onclick="abrirModal(window.__ticketMap[${t.id}])"><span class="badge ${t.priority===5?"b1":"b4"}">${t.priority===5?"Muito Alta":"Alta"}</span><div><div style="font-size:12px;color:#e8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name||"Sem título"}</div><div style="font-size:10px;color:#3a5a3a;font-family:'Share Tech Mono',monospace;">#${t.id} · ${t.locations_id||"—"}</div></div><div style="font-size:11px;font-family:'Share Tech Mono',monospace;color:${ageColor(t.date)};text-align:right;">${ageStr(t.date)}</div></div>`).join("");}
+  const ec={};
+  equipamentos.forEach(eq=>{const s=(eq.states_id||"").toString().toLowerCase();ec[s]=(ec[s]||0)+1;});
+  const STATUS_EQUIP={"em funcionamento":{cor:"#66bb6a"},"em análise":{cor:"#29b6f6"},"com defeito":{cor:"#ef5350"},"em manutenção":{cor:"#ffab00"},"em manutenção externa":{cor:"#ff7043"},"obsoleto":{cor:"#ab47bc"},"sem conserto":{cor:"#888"}};
+  const maxE=Math.max(...Object.values(ec),1);
+  document.getElementById("equip-bars").innerHTML=Object.entries(STATUS_EQUIP).filter(([k])=>ec[k]).map(([k,cfg])=>hbar(k.charAt(0).toUpperCase()+k.slice(1),ec[k],maxE,cfg.cor)).join("");
+  sv("eq-total",equipamentos.length);
+  sv("eq-ok",ec["em funcionamento"]||0);
+  sv("eq-manut",(ec["em manutenção"]||0)+(ec["em manutenção externa"]||0)+(ec["em análise"]||0));
+  sv("eq-inop",(ec["com defeito"]||0)+(ec["obsoleto"]||0)+(ec["sem conserto"]||0));
+}
+
+function renderAssistencia(tickets){
+  const now=new Date();
+  const{s:ms,e:me}=monthBounds();
+  const doMes=tickets.filter(t=>new Date(t.date)>=ms&&new Date(t.date)<=me);
+  const resolvidosMes=doMes.filter(t=>t.status===5||t.status===6);
+  const taxa=doMes.length>0?Math.round((resolvidosMes.length/doMes.length)*100):0;
+  sv("m-abertos",doMes.length);
+  sv("m-resolvidos",resolvidosMes.length);
+  document.getElementById("m-taxa").textContent="taxa "+taxa+"%";
+  document.getElementById("m-abertos-sub").textContent="mês de "+MESES[now.getMonth()];
+  const tempos=resolvidosMes.filter(t=>t.solvedate).map(t=>(new Date(t.solvedate)-new Date(t.date))/86400000);
+  const tmed=tempos.length>0?(tempos.reduce((a,b)=>a+b,0)/tempos.length).toFixed(1):"—";
+  sv("m-tmed",tmed);
+  const pendentes=tickets.filter(t=>{if(t.status===5||t.status===6) return false;return(now-new Date(t.date))/86400000>7;}).length;
+  sv("m-pendentes",pendentes);
+  semaforo(document.getElementById("sem-pendentes"),pendentes===0?"ok":pendentes<5?"warn":"crit");
+  renderVchart(tickets,now.getMonth(),now.getFullYear());
+  const SC_COLOR={1:"#ffab00",2:"#29b6f6",3:"#ab47bc",4:"#ff7043",5:"#66bb6a",6:"#555"};
+  const sc={};doMes.forEach(t=>sc[t.status]=(sc[t.status]||0)+1);
+  const slicesStatus=[1,2,3,4,5,6].filter(s=>sc[s]).map(s=>({val:sc[s],color:SC_COLOR[s],label:STATUS_LABEL[s]}));
+  renderDonut("donut-status-wrap",slicesStatus,taxa+"%","resolvidos");
+  const abertos=tickets.filter(t=>t.status!==5&&t.status!==6);
+  const pc={};abertos.forEach(t=>{const p=t.priority||3;pc[p]=(pc[p]||0)+1;});
+  const slicesPrior=[5,4,3,2,1].filter(p=>pc[p]).map(p=>({val:pc[p],color:PRIOR_COLOR[p]||"#4caf50",label:PRIOR_LABEL[p]}));
+  renderDonut("donut-prior-wrap",slicesPrior,abertos.length,"abertos");
+  const criticos=abertos.filter(t=>t.priority>=4).length;
+  document.getElementById("ona-criticos").textContent=criticos;
+  semaforo(document.getElementById("sem-criticos"),criticos===0?"ok":criticos<3?"warn":"crit");
+  document.getElementById("ona-taxa").textContent=taxa+"%";
+  semaforo(document.getElementById("sem-taxa"),taxa>=80?"ok":taxa>=60?"warn":"crit");
+}
+
+function renderChamados(tickets,listaOverride){
+  _allTickets=tickets;
+  window.__ticketMap={};tickets.forEach(t=>window.__ticketMap[t.id]=t);
+  const abertos=listaOverride||tickets.filter(t=>t.status!==5&&t.status!==6).sort((a,b)=>b.priority-a.priority||(new Date(a.date)-new Date(b.date))).slice(0,14);
+  const list=document.getElementById("ticket-list");
+  const filterBadge=filtroSetor?`<div class="setor-filter-badge" onclick="limparFiltroSetor()">✕ filtro: ${filtroSetor}</div>`:"";
+  if(!abertos.length){list.innerHTML=filterBadge+"<div class='empty-state'>Nenhum chamado encontrado</div>";}
+  else{list.innerHTML=filterBadge+abertos.map(t=>`<div class="ticket-card s${t.status}" style="cursor:pointer;" onclick="abrirModal(window.__ticketMap[${t.id}])"><div><div class="t-title">${t.name||"Sem título"}</div><div class="t-id">#${t.id}</div></div><div class="t-loc">${t.locations_id||"—"}</div><div><span class="badge b${t.status}">${STATUS_LABEL[t.status]||t.status}</span></div><div class="t-date">${fmtDate(t.date)}</div><div class="t-age" style="color:${ageColor(t.date)}">${ageStr(t.date)}</div></div>`).join("");}
+  document.getElementById("ticket-count").textContent=abertos.length+" chamados"+(filtroSetor?" · "+filtroSetor:"");
+  const n=new Date();document.getElementById("ticket-updated").textContent="atualizado às "+String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
+}
+
+function renderKpis(tickets,equipamentos){
+  const{s:ms,e:me}=monthBounds();
+  sv("kpi-new",tickets.filter(t=>t.status===1).length);
+  sv("kpi-open",tickets.filter(t=>t.status!==5&&t.status!==6).length);
+  sv("kpi-solved",tickets.filter(t=>t.solvedate&&new Date(t.solvedate)>=ms&&new Date(t.solvedate)<=me).length);
+  const criticos=tickets.filter(t=>t.status!==5&&t.status!==6&&t.priority>=4).length;
+  sv("kpi-crit",criticos);
+  const sub2=document.getElementById("kpi-solved-sub");if(sub2) sub2.textContent=MESES[new Date().getMonth()];
+  const critCard=document.getElementById("kpi-crit-card");if(critCard) critCard.style.opacity=criticos>0?"1":"0.5";
+  const ec={};equipamentos.forEach(eq=>{const s=(eq.states_id||"").toLowerCase();ec[s]=(ec[s]||0)+1;});
+  const excluidos=(ec["obsoleto"]||0)+(ec["sem conserto"]||0);
+  const denom=equipamentos.length-excluidos;
+  const func=ec["em funcionamento"]||0;
+  const disp=denom>0?Math.round((func/denom)*100):0;
+  const dispEl=document.getElementById("kpi-disp"),cardEl=document.getElementById("kpi-disp-card");
+  if(dispEl){dispEl.textContent=disp+"%";dispEl.classList.remove("loading");}
+  if(cardEl){cardEl.classList.remove("warn","crit");if(disp<80) cardEl.classList.add("crit");else if(disp<90) cardEl.classList.add("warn");}
+}
+
+/* ═══ ALERTAS ═══ */
+const alertasExibidos=new Set();
+function checkAlertas(tickets){
+  tickets.filter(t=>(t.status!==5&&t.status!==6)&&t.priority>=4).forEach(t=>{
+    if(alertasExibidos.has(t.id)) return;
+    alertasExibidos.add(t.id);
+    const stack=document.getElementById("alert-stack");
+    const prior=t.priority===5?"MUITO ALTA":"ALTA";
+    const card=document.createElement("div");card.className="alert-card";card.id="alert-"+t.id;
+    card.innerHTML=`<button class="alert-close" onclick="fecharAlerta('alert-${t.id}')">✕</button><div class="alert-badge">⚠ Chamado Crítico — Prioridade ${prior}</div><div class="alert-title">${t.name||"Sem título"}</div><div class="alert-meta">#${t.id} · ${t.locations_id||"—"} · ${fmtDate(t.date)}</div>`;
+    stack.appendChild(card);setTimeout(()=>fecharAlerta("alert-"+t.id),60000);
+  });
+}
+function fecharAlerta(id){const el=document.getElementById(id);if(el){el.style.opacity="0";el.style.transform="translateX(40px)";el.style.transition="all .3s ease";setTimeout(()=>el.remove(),300);}}
+
+/* ═══ LOOP PRINCIPAL ═══ */
+async function fetchAll(){
+  const [tickets,equip]=await Promise.all([getMockTickets(),getMockEquip()]);
+  renderKpis(tickets,equip);
+  renderCentral(tickets,equip);
+  renderAssistencia(tickets);
+  renderChamados(tickets);
+  checkAlertas(tickets);
+  kpiR=KPI_MS/1000;
+}
+
+setupKpiNav();
+fetchAll();
+setInterval(fetchAll,KPI_MS);
+</script>
+</body>
+</html>
