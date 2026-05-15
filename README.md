@@ -1,17 +1,17 @@
-# 🏥 Painel de Engenharia Clínica
+# Painel de Engenharia Clínica
 
-Dashboard de monitoramento em tempo real para departamentos de **Engenharia Clínica hospitalar**, desenvolvido com HTML, CSS e JavaScript puro — sem frameworks, sem dependências externas além de fontes Google.
+Dashboard de monitoramento em tempo real para departamentos de **Engenharia Clínica e Gestão de Tecnologias medico-hospitalar** conectado com o GLPI para gestão de chamados e parque tecnológico, desenvolvido com HTML, CSS e JavaScript puro — sem frameworks, sem dependências externas além de fontes Google. 
 
 > **Este repositório contém a versão demo** com dados fictícios gerados localmente. A versão em produção consome dados em tempo real via API REST do [GLPI](https://glpi-project.org/), sistema de gestão de ativos e chamados técnicos.
 
 ---
 
-## 📸 Visão geral
+## Visão geral
 
 O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para exibição contínua em TVs e monitores nos setores técnicos do hospital.
 
 ### Tela 1 — Central
-![Tela Central](https://via.placeholder.com/800x450/060a06/4caf50?text=Central+%7C+Status+%7C+Setores+%7C+Equipamentos)
+![Tela Central]([https://i.imgur.com/Yj0syJQ.png])
 
 - Chamados por status (Novo, Em Atendimento, Planejado, Em Espera, Solucionado, Fechado)
 - Distribuição por prioridade (barras horizontais)
@@ -20,6 +20,7 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Chamados críticos (Alta / Muito Alta prioridade) em destaque
 
 ### Tela 2 — Métricas do Mês
+![KPIs]([https://i.imgur.com/gJrY3el.png])
 - KPIs: chamados abertos, resolvidos, tempo médio de resolução, pendentes > 7 dias
 - Gráfico de barras verticais: chamados por dia do mês
 - Gráfico de rosca: distribuição por status
@@ -27,13 +28,14 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Indicadores ONA com semáforo visual (verde/amarelo/vermelho)
 
 ### Tela 3 — Lista de Chamados
+![Chamados]([https://i.imgur.com/Miyow1b.png])
 - Chamados abertos ordenados por prioridade
 - Coluna de idade com cor dinâmica (verde/amarelo/vermelho)
 - Modal de detalhes ao clicar em qualquer chamado
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 | Recurso | Descrição |
 |---|---|
@@ -70,7 +72,7 @@ GET /api.php/v1/Glpi\CustomAsset\... → inventário de equipamentos
 Os dados são processados localmente no navegador — sem backend intermediário.
 
 ### Contexto hospitalar
-Desenvolvido para um hospital com **acreditação UNACON** (oncologia) e processo ativo de certificação **ONA (Organização Nacional de Acreditação)**. Os indicadores da Tela 2 foram mapeados conforme os requisitos ONA para engenharia clínica:
+Desenvolvido para um hospital com **acreditação UNACON** (oncologia) e certificação **ONA (Organização Nacional de Acreditação)**. Os indicadores da Tela 2 foram mapeados conforme os requisitos ONA para engenharia clínica:
 
 - Taxa de resolução de chamados ≥ 80% → ✅ Adequado
 - Chamados críticos em aberto → monitoramento contínuo
@@ -109,16 +111,19 @@ const USR_T = "SEU_USER_TOKEN";
 
 ```
 painel-engenharia-clinica/
-├── index.html       → Dashboard completo (demo com dados fictícios)
+├── painel.html       → Dashboard completo (demo com dados fictícios)
 ├── README.md        → Este arquivo
-└── screenshot.png   → Print do painel em funcionamento
+└── Imagens   → Prints do painel em funcionamento
+    ├── Tela 1
+    ├── Tela 2
+    └── Tela 3
 ```
 
 ---
 
 ## 👤 Sobre
 
-Desenvolvido por **João** — Engenheiro Clínico em formação, atuando na gestão de equipamentos médico-hospitalares com foco em qualidade, rastreabilidade e conformidade com padrões de acreditação.
+Desenvolvido por **João Augusto Ferreira** — Biomédico, atuando na gestão de equipamentos médico-hospitalares com foco em qualidade, rastreabilidade e conformidade com padrões de acreditação.
 
 - 📍 Minas Gerais, Brasil
 - 🏥 Experiência em ambiente hospitalar com UNACON e processo ONA
