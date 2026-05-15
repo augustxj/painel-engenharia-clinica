@@ -10,8 +10,12 @@ Dashboard de monitoramento em tempo real para departamentos de **Engenharia Clí
 
 O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para exibição contínua em TVs e monitores nos setores técnicos do hospital.
 
+> [!WARNING]
+> **DADOS FICTÍCIOS GERADOS ALEATORIAMENTE**  
+> As informações exibidas nas imagens são apenas para demonstração.
+
 ### Tela 1 — Central
-![Tela Central]([https://i.imgur.com/Yj0syJQ.png])
+![Tela Central](https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%201.png?raw=true)
 
 - Chamados por status (Novo, Em Atendimento, Planejado, Em Espera, Solucionado, Fechado)
 - Distribuição por prioridade (barras horizontais)
@@ -20,7 +24,7 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Chamados críticos (Alta / Muito Alta prioridade) em destaque
 
 ### Tela 2 — Métricas do Mês
-![KPIs]([https://i.imgur.com/gJrY3el.png])
+![KPIs]([https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%202.png?raw=true])
 - KPIs: chamados abertos, resolvidos, tempo médio de resolução, pendentes > 7 dias
 - Gráfico de barras verticais: chamados por dia do mês
 - Gráfico de rosca: distribuição por status
@@ -28,7 +32,7 @@ O painel roda diretamente no navegador (arquivo `.html`) e foi projetado para ex
 - Indicadores ONA com semáforo visual (verde/amarelo/vermelho)
 
 ### Tela 3 — Lista de Chamados
-![Chamados]([https://i.imgur.com/Miyow1b.png])
+![Chamados]([https://github.com/augustxj/painel-engenharia-clinica/blob/main/Imagens/Tela%203.png?raw=true])
 - Chamados abertos ordenados por prioridade
 - Coluna de idade com cor dinâmica (verde/amarelo/vermelho)
 - Modal de detalhes ao clicar em qualquer chamado
